@@ -29,7 +29,7 @@
 
 	function handleSearch(event: Event) {
 		event.preventDefault();
-		if (searchQuery.trim() === "") 
+		if (searchQuery.trim() === " ") 
 		return;
 		console.log("Searching for:", searchQuery);
 	}
@@ -56,6 +56,7 @@
 		<a href="/" class="logo">Apply<span>CM</span></a>
 
 		<form class="search-form" onsubmit={handleSearch}>
+<!-- svg stands for Scalable Vector Graphics and it's used for styling the icon -->
 			<svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
 				<circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
 				<path d="M20 20l-3.5-3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" />

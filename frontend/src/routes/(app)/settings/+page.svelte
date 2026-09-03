@@ -38,7 +38,7 @@
 
     try {
       const token = localStorage.getItem("access_token") || "";
-      const res = await fetch("http://localhost:8001/api/auth/change-password", {
+      const res = await fetch("http://localhost:8000/api/auth/change-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -102,7 +102,7 @@
     isDeleting = true;
     try {
       const token = localStorage.getItem("access_token") || "";
-      await fetch("http://localhost:8001/api/users/me", {
+      await fetch("http://localhost:8000/api/users/me", {
         method: "DELETE",
         headers: {
           "Authorization": `Bearer ${token}`

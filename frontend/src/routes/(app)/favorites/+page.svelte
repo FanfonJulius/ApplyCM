@@ -54,7 +54,7 @@
       localStorage.setItem("favorite_schools_list", JSON.stringify(favoriteSchools));
     }
 
-    fetch(`http://localhost:8001/api/favorites/${schoolId}`, {
+    fetch(`http://localhost:8000/api/favorites/${schoolId}`, {
       method: "DELETE"
     }).catch(() => {});
   }
@@ -91,7 +91,7 @@
     applyMessage = null;
 
     try {
-      await fetch("http://localhost:8001/api/applications/batch", {
+      await fetch("http://localhost:8000/api/applications/batch", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

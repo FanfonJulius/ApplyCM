@@ -198,7 +198,7 @@
     loading = true;
     loadError = null;
     try {
-      const res = await fetch("http://localhost:8001/api/schools");
+      const res = await fetch("http://localhost:8000/api/schools");
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
@@ -260,7 +260,7 @@
       localStorage.setItem("favorite_schools_list", JSON.stringify(favObjects));
     }
 
-    fetch("http://localhost:8001/api/favorites", {
+    fetch("http://localhost:8000/api/favorites", {
       method: favoriteIds.includes(schoolId) ? "POST" : "DELETE",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ school_id: schoolId }),

@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { API_BASE_URL } from "$lib/config";
+
     let email = $state("");
     let password = $state("");
     let isLoading = $state(false);
@@ -12,7 +14,7 @@
             formData.append("username", email);
             formData.append("password", password);
 
-            const response = await fetch("http://127.0.0.1:8001/api/auth/login", {
+            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
