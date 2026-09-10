@@ -9,7 +9,7 @@ This comprehensive guide is designed for the frontend development team to thorou
 ApplyCM uses a decoupled **RESTful Client-Server Architecture**:
 - **Frontend**: SvelteKit running on `http://localhost:5173`.
 - **Backend**: Python FastAPI running on `http://localhost:8001`.
-- **Database**: PostgreSQL (hosted on Supabase) accessed via SQLAlchemy ORM.
+- **Database**: PostgreSQL (hosted on Neon) accessed via SQLAlchemy ORM.
 
 ```mermaid
 sequenceDiagram
@@ -20,7 +20,7 @@ sequenceDiagram
     participant Service as Service Layer (app/services/auth_service.py)
     participant Sec as Security Utils (app/core/security.py)
     participant ORM as SQLAlchemy ORM (app/models/user.py)
-    participant DB as Supabase PostgreSQL
+    participant DB as Neon PostgreSQL
 
     Note over Frontend, DB: 1. User Registration (Signup) Flow
     Frontend->>Router: POST /api/auth/signup { email, password }
@@ -282,7 +282,7 @@ Below is a detailed, line-by-line explanation of every single file in the backen
 5: engine = create_engine(settings.DATABASE_URL)
 6: SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 ```
-- **Line 5**: Creates a SQLAlchemy `engine` connected to PostgreSQL (Supabase) via `settings.DATABASE_URL`.
+- **Line 5**: Creates a SQLAlchemy `engine` connected to PostgreSQL (Neon) via `settings.DATABASE_URL`.
 - **Line 6**: Configures `SessionLocal`, a factory class for producing database sessions with disabled `autocommit` and `autoflush` for explicit transaction control.
 
 ---
@@ -370,7 +370,7 @@ Below is a detailed, line-by-line explanation of every single file in the backen
   1. Parses the Bearer token header.
   2. Calls `verify_token(token)`.
   3. Extracts the `sub` claim. Supports both integer user IDs (`User.id`) and email strings (`User.email`).
-  4. Queries Supabase for the matching user record.
+  4. Queries Neon for the matching user record.
   5. Verifies `user.is_active`.
   6. Injects the authenticated `User` object into the router handler, or raises `HTTP 401 Unauthorized`.
 
@@ -478,7 +478,7 @@ Below is a detailed, line-by-line explanation of every single file in the backen
 31:         db.refresh(db_user)
 32:         return db_user
 ```
-- **Line 14–32**: `create_user()` checks for duplicate emails, hashes the raw password with `bcrypt`, constructs a `User` ORM object, commits it to Supabase PostgreSQL, refreshes `db_user` to populate `id`, and returns the instance.
+- **Line 14–32**: `create_user()` checks for duplicate emails, hashes the raw password with `bcrypt`, constructs a `User` ORM object, commits it to Neon PostgreSQL, refreshes `db_user` to populate `id`, and returns the instance.
 
 ```python
 34:     @staticmethod

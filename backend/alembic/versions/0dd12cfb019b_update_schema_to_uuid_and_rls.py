@@ -147,6 +147,18 @@ def upgrade() -> None:
     op.execute("ALTER TABLE favorites ENABLE ROW LEVEL SECURITY;")
     op.execute("ALTER TABLE documents ENABLE ROW LEVEL SECURITY;")
 
+    # Neon compatibility shim: Supabase provides auth.uid() natively, Neon does not
+    op.execute("CREATE SCHEMA IF NOT EXISTS auth;")
+    op.execute("""
+        CREATE OR REPLACE FUNCTION auth.uid()
+        RETURNS uuid
+        LANGUAGE sql
+        STABLE
+        AS $$
+          SELECT NULLIF(current_setting('app.current_user_id', true), '')::uuid
+        $$;
+    """)
+
     # 11. Create current_student_id() helper function
     op.execute("""
         CREATE OR REPLACE FUNCTION current_student_id()
@@ -192,17 +204,15 @@ def upgrade() -> None:
           WITH CHECK (auth.uid() = user_id);
     """)
 
-    # Schools & Programs policies
+    # Schools & Programs policies (no Supabase "authenticated" role on Neon; app enforces auth)
     op.execute("""
         CREATE POLICY "Any authenticated user can view schools"
           ON schools FOR SELECT
-          TO authenticated
           USING (true);
     """)
     op.execute("""
         CREATE POLICY "Any authenticated user can view programs"
           ON programs FOR SELECT
-          TO authenticated
           USING (true);
     """)
 
@@ -261,6 +271,7 @@ def upgrade() -> None:
 
 def downgrade() -> None:
     op.execute("DROP FUNCTION IF EXISTS current_student_id() CASCADE;")
+    op.execute("DROP FUNCTION IF EXISTS auth.uid() CASCADE;")
     op.execute("DROP TABLE IF EXISTS favorites CASCADE;")
     op.execute("DROP TABLE IF EXISTS documents CASCADE;")
     op.execute("DROP TABLE IF EXISTS applications CASCADE;")

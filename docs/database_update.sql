@@ -1,7 +1,7 @@
 -- =====================================================================
 -- ApplyCM Database Schema Update Script
 -- =====================================================================
--- Run this script in PostgreSQL / Supabase SQL Editor to update
+-- Run this script in PostgreSQL / Neon SQL Editor to update
 -- student_profiles and add education tracking columns and fields.
 -- =====================================================================
 
