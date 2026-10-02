@@ -7,3 +7,4 @@ from app.models.program import Program
 from app.models.application import Application
 from app.models.favorite import Favorite
 from app.models.document import Document
+from app.models.application_submission import ApplicationSubmission

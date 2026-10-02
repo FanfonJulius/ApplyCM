@@ -1,7 +1,9 @@
 <script lang="ts">
+    import { API_BASE_URL } from "$lib/config";
     let email = $state("");
     let password = $state("");
     let isLoading = $state(false);
+    let success = $state(false);
     let errorMessage = $state("");
 
     async function login() {
@@ -12,7 +14,7 @@
             formData.append("username", email);
             formData.append("password", password);
 
-            const response = await fetch("http://127.0.0.1:8001/api/auth/login", {
+            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/x-www-form-urlencoded",
@@ -27,11 +29,14 @@
 
             const data = await response.json();
             localStorage.setItem("access_token", data.access_token);
-            alert("Login successful!");
-            window.location.href = "/dashboard";
+            success = true;
+            setTimeout(() => {
+                window.location.href = "/dashboard";
+            }, 900);
         } catch (error: any) {
             console.error(error);
-            errorMessage = error.message || "Invalid email or password. Please try again.";
+            errorMessage =
+                error.message || "Invalid email or password. Please try again.";
         } finally {
             isLoading = false;
         }
@@ -41,10 +46,21 @@
 <div class="page-background">
     <div class="auth-card">
         <h2 class="auth-card-title">Login to ApplyCM</h2>
-        <form onsubmit={(event) => { event.preventDefault(); login(); }}>
+        <form
+            onsubmit={(event) => {
+                event.preventDefault();
+                login();
+            }}
+        >
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" required bind:value={email} disabled={isLoading} />
+                <input
+                    type="email"
+                    id="email"
+                    required
+                    bind:value={email}
+                    disabled={isLoading}
+                />
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
@@ -61,10 +77,15 @@
             {#if errorMessage}
                 <p class="error-message">{errorMessage}</p>
             {/if}
-            <button type="submit" class="btn-submit" disabled={isLoading}>{#if isLoading}Logging in...{:else}Login{/if}</button>
+            <button type="submit" class="btn-submit" disabled={isLoading}
+                >{#if isLoading}Logging in...{:else}Login{/if}</button
+            >
         </form>
         <p>Don't have an account? <a href="/signup">Sign up</a></p>
     </div>
+    {#if success}
+        <div class="alert-success" role="status">✓ Logged in successfully</div>
+    {/if}
 </div>
 
 <style>
@@ -74,7 +95,12 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        background: radial-gradient(circle at 50% 20%, #234c8e 0%, #142a51 45%, #050a14 100%);
+        background: radial-gradient(
+            circle at 50% 20%,
+            #234c8e 0%,
+            #142a51 45%,
+            #050a14 100%
+        );
         padding: 2rem 1rem;
     }
 
@@ -87,11 +113,17 @@
         border: 1px solid #96bef3;
         border-radius: 40px;
         border-width: 0.5px;
-        box-shadow: 0 8px 24px rgba(51, 132, 238, 0.35), 0 2px 6px rgba(0, 0, 0, 0.3);
-        transition: box-shadow 0.5s ease-in-out, transform 0.5s ease-in-out;
+        box-shadow:
+            0 8px 24px rgba(51, 132, 238, 0.35),
+            0 2px 6px rgba(0, 0, 0, 0.3);
+        transition:
+            box-shadow 0.5s ease-in-out,
+            transform 0.5s ease-in-out;
     }
     .auth-card:hover {
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.45), 0 8px 16px rgba(51, 132, 238, 0.4);
+        box-shadow:
+            0 20px 40px rgba(0, 0, 0, 0.45),
+            0 8px 16px rgba(51, 132, 238, 0.4);
         transform: translateY(-6px);
     }
     .auth-card-title {

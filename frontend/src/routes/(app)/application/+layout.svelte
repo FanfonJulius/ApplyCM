@@ -1,9 +1,12 @@
 <script lang="ts">
+    import { onMount } from "svelte";
     import { page } from "$app/state";
+    import type { ProfileSection } from "$lib/api/profile";
+    import { isSectionComplete, loadProfile, profileState } from "$lib/stores/profile.svelte";
 
     let { children } = $props();
 
-    const SECTIONS = [
+    const SECTIONS: { key: ProfileSection; label: string; href: string }[] = [
         { key: "profile", label: "1. Personal Details", href: "/application/profile" },
         { key: "contact", label: "2. Contact Details", href: "/application/contact" },
         { key: "education", label: "3. Education History", href: "/application/education" },
@@ -11,10 +14,9 @@
         { key: "writing", label: "5. Writing & Statement", href: "/application/writing" },
     ];
 
-    function isSectionComplete(key: string): boolean {
-        if (typeof window === "undefined") return false;
-        return localStorage.getItem(`section_${key}_complete`) === "true";
-    }
+    onMount(() => {
+        loadProfile();
+    });
 </script>
 
 <div class="application-layout">
@@ -36,11 +38,26 @@
         </ul>
     </aside>
     <section class="step-content">
+        {#if profileState.error}
+            <div class="load-error" role="alert">
+                We couldn't load your saved profile: {profileState.error}
+            </div>
+        {/if}
         {@render children()}
     </section>
 </div>
 
 <style>
+    .load-error {
+        background-color: #fff5f5;
+        border: 1px solid #feb2b2;
+        color: #9b2c2c;
+        padding: 0.75rem 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        font-weight: 500;
+    }
+
     .application-layout {
         display: flex;
         gap: 2rem;

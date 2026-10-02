@@ -1,4 +1,8 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import { loadProfile, saveSection } from "$lib/stores/profile.svelte";
+
   let address = $state("");
   let city = $state("");
   let region = $state("");
@@ -6,6 +10,7 @@
   let emergencyPhone = $state("");
   let isSaving = $state(false);
   let saveSuccess = $state(false);
+  let saveError = $state<string | null>(null);
 
   const CAMEROON_REGIONS = [
     "Adamawa",
@@ -20,36 +25,33 @@
     "West"
   ];
 
+  onMount(async () => {
+    const profile = await loadProfile();
+    if (!profile) return;
+    address = profile.address ?? address;
+    city = profile.city ?? city;
+    region = profile.region ?? region;
+    emergencyName = profile.emergency_contact_name ?? emergencyName;
+    emergencyPhone = profile.emergency_contact_phone ?? emergencyPhone;
+  });
+
   async function handleSubmit() {
     isSaving = true;
     saveSuccess = false;
+    saveError = null;
 
     try {
-      await fetch("http://localhost:8001/api/v1/student-profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          address,
-          city,
-          region,
-          emergencyName,
-          emergencyPhone,
-          is_completed: true
-        }),
+      await saveSection("contact", {
+        address: address,
+        city: city,
+        region: region,
+        emergency_contact_name: emergencyName,
+        emergency_contact_phone: emergencyPhone
       });
-
-      localStorage.setItem("section_contact_complete", "true");
       saveSuccess = true;
-      setTimeout(() => {
-        window.location.href = "/application/education";
-      }, 1200);
+      setTimeout(() => goto("/application/education"), 1200);
     } catch (err) {
-      console.error("Save contact details failed, setting local state:", err);
-      localStorage.setItem("section_contact_complete", "true");
-      saveSuccess = true;
-      setTimeout(() => {
-        window.location.href = "/application/education";
-      }, 1200);
+      saveError = err instanceof Error ? err.message : "Could not save your details. Please try again.";
     } finally {
       isSaving = false;
     }
@@ -62,6 +64,12 @@
   {#if saveSuccess}
     <div class="alert-success" role="status">
       ✓ Contact information saved! Redirecting to Education History...
+    </div>
+  {/if}
+
+  {#if saveError}
+    <div class="alert-error" role="alert">
+      {saveError}
     </div>
   {/if}
 
@@ -161,6 +169,16 @@
     background-color: #e6fffa;
     border: 1px solid #319795;
     color: #234e52;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+
+  .alert-error {
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+    color: #9b2c2c;
     padding: 0.75rem 1rem;
     border-radius: 8px;
     margin-bottom: 1.5rem;

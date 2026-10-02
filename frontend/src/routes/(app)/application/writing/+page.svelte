@@ -1,38 +1,38 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import { loadProfile, saveSection } from "$lib/stores/profile.svelte";
+
   let essayPrompt = $state("Personal Statement");
   let personalStatement = $state("");
   let additionalInfo = $state("");
   let isSaving = $state(false);
   let saveSuccess = $state(false);
+  let saveError = $state<string | null>(null);
+
+  onMount(async () => {
+    const profile = await loadProfile();
+    if (!profile) return;
+    essayPrompt = profile.essay_prompt ?? essayPrompt;
+    personalStatement = profile.writing_sample ?? personalStatement;
+    additionalInfo = profile.additional_info ?? additionalInfo;
+  });
 
   async function handleSubmit() {
     isSaving = true;
     saveSuccess = false;
+    saveError = null;
 
     try {
-      await fetch("http://localhost:8001/api/v1/student-profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          essayPrompt,
-          personalStatement,
-          additionalInfo,
-          is_completed: true
-        }),
+      await saveSection("writing", {
+        essay_prompt: essayPrompt,
+        writing_sample: personalStatement,
+        additional_info: additionalInfo
       });
-
-      localStorage.setItem("section_writing_complete", "true");
       saveSuccess = true;
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 1200);
+      setTimeout(() => goto("/dashboard"), 1200);
     } catch (err) {
-      console.error("Save writing details failed, setting local state:", err);
-      localStorage.setItem("section_writing_complete", "true");
-      saveSuccess = true;
-      setTimeout(() => {
-        window.location.href = "/dashboard";
-      }, 1200);
+      saveError = err instanceof Error ? err.message : "Could not save your details. Please try again.";
     } finally {
       isSaving = false;
     }
@@ -45,6 +45,12 @@
   {#if saveSuccess}
     <div class="alert-success" role="status">
       ✓ Writing section saved! Application sections complete. Redirecting to Dashboard...
+    </div>
+  {/if}
+
+  {#if saveError}
+    <div class="alert-error" role="alert">
+      {saveError}
     </div>
   {/if}
 
@@ -105,6 +111,16 @@
     background-color: #e6fffa;
     border: 1px solid #319795;
     color: #234e52;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+
+  .alert-error {
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+    color: #9b2c2c;
     padding: 0.75rem 1rem;
     border-radius: 8px;
     margin-bottom: 1.5rem;

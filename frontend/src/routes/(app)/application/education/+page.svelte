@@ -1,40 +1,38 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import { loadProfile, saveSection } from "$lib/stores/profile.svelte";
+
   let secondarySchool = $state("");
-  let advancedLevelSlipImage = $state("");
   let ordinaryLevelSlipImage = $state("");
+  let advancedLevelSlipImage = $state("");
   let isSaving = $state(false);
   let saveSuccess = $state(false);
+  let saveError = $state<string | null>(null);
+
+  onMount(async () => {
+    const profile = await loadProfile();
+    if (!profile) return;
+    secondarySchool = profile.secondary_school ?? secondarySchool;
+    ordinaryLevelSlipImage = profile.o_level_slip_url ?? ordinaryLevelSlipImage;
+    advancedLevelSlipImage = profile.a_level_slip_url ?? advancedLevelSlipImage;
+  });
 
   async function handleSubmit() {
     isSaving = true;
     saveSuccess = false;
+    saveError = null;
 
     try {
-      const res = await fetch("http://localhost:8001/api/v1/student-profile", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          secondarySchool,
-          advancedLevelSlipImage,
-          ordinaryLevelSlipImage,
-          is_completed: true
-        }),
+      await saveSection("education", {
+        secondary_school: secondarySchool,
+        o_level_slip_url: ordinaryLevelSlipImage,
+        a_level_slip_url: advancedLevelSlipImage
       });
-
-      localStorage.setItem("section_education_complete", "true");
       saveSuccess = true;
-      setTimeout(() => {
-        window.location.href = "/application/activities";
-      }, 1200);
+      setTimeout(() => goto("/application/activities"), 1200);
     } catch (err) {
-      console.error("Save education details failed, saving state locally:", err);
-      localStorage.setItem("section_education_complete", "true");
-      saveSuccess = true;
-      setTimeout(() => {
-        window.location.href = "/application/activities";
-      }, 1200);
+      saveError = err instanceof Error ? err.message : "Could not save your details. Please try again.";
     } finally {
       isSaving = false;
     }
@@ -47,6 +45,12 @@
   {#if saveSuccess}
     <div class="alert-success" role="status">
       ✓ Education details saved! Redirecting to Activities & Experiences...
+    </div>
+  {/if}
+
+  {#if saveError}
+    <div class="alert-error" role="alert">
+      {saveError}
     </div>
   {/if}
 
@@ -109,6 +113,16 @@
     background-color: #e6fffa;
     border: 1px solid #319795;
     color: #234e52;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+
+  .alert-error {
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+    color: #9b2c2c;
     padding: 0.75rem 1rem;
     border-radius: 8px;
     margin-bottom: 1.5rem;

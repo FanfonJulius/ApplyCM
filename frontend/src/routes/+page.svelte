@@ -80,7 +80,7 @@
 			</p>
 			<div class="hero-actions">
 				<a href="/signup" class="btn-primary">Create your profile</a>
-				<a href="/dashboard" class="btn-text">I already have an account</a>
+				<a href="/login" class="btn-text">I already have an account</a>
 			</div>
 		</section>
 

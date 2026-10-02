@@ -1,10 +1,12 @@
 <script lang="ts">
+    import { API_BASE_URL } from "$lib/config";
     //support@fapshi.com
     let email = $state("");
     let password = $state("");
     let confirmPassword = $state("");
     let isSeen = $state(true);
     let isLoading = $state(false);
+    let success = $state(false);
 
     async function signup() {
         if (password.length < 6) {
@@ -17,24 +19,22 @@
         }
         isLoading = true;
         try {
-            const response = await fetch(
-                "http://127.0.0.1:8001/api/auth/signup",
-                {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({ email, password }),
+            const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
                 },
-            );
+                body: JSON.stringify({ email, password }),
+            });
 
             if (!response.ok) {
                 const errData = await response.json().catch(() => ({}));
                 throw new Error(errData.detail || "Signup failed");
             }
-
-            alert("Account created successfully! Redirecting to login...");
-            window.location.href = "/login";
+            success = true;
+            setTimeout(() => {
+                window.location.href = "/dashboard";
+            }, 900);
         } catch (error: any) {
             console.error(error);
             alert(
@@ -94,6 +94,11 @@
         </form>
         <p>Already have an account? <a href="/login">Login</a></p>
     </div>
+    {#if success}
+        <div class="alert-success" role="status">
+            ✓ Account created successfully
+        </div>
+    {/if}
 </div>
 
 <style>

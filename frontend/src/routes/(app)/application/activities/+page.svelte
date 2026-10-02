@@ -1,40 +1,41 @@
 <script lang="ts">
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import { loadProfile, saveSection } from "$lib/stores/profile.svelte";
+
   let activityName = $state("");
   let rolePosition = $state("");
   let description = $state("");
   let honorsAwards = $state("");
   let isSaving = $state(false);
   let saveSuccess = $state(false);
+  let saveError = $state<string | null>(null);
+
+  onMount(async () => {
+    const profile = await loadProfile();
+    if (!profile) return;
+    activityName = profile.activity_name ?? activityName;
+    rolePosition = profile.activity_role ?? rolePosition;
+    description = profile.activity_description ?? description;
+    honorsAwards = profile.honors_awards ?? honorsAwards;
+  });
 
   async function handleSubmit() {
     isSaving = true;
     saveSuccess = false;
+    saveError = null;
 
     try {
-      await fetch("http://localhost:8001/api/v1/student-profile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          activityName,
-          rolePosition,
-          description,
-          honorsAwards,
-          is_completed: true
-        }),
+      await saveSection("activities", {
+        activity_name: activityName,
+        activity_role: rolePosition,
+        activity_description: description,
+        honors_awards: honorsAwards
       });
-
-      localStorage.setItem("section_activities_complete", "true");
       saveSuccess = true;
-      setTimeout(() => {
-        window.location.href = "/application/writing";
-      }, 1200);
+      setTimeout(() => goto("/application/writing"), 1200);
     } catch (err) {
-      console.error("Save activities details failed, setting local state:", err);
-      localStorage.setItem("section_activities_complete", "true");
-      saveSuccess = true;
-      setTimeout(() => {
-        window.location.href = "/application/writing";
-      }, 1200);
+      saveError = err instanceof Error ? err.message : "Could not save your details. Please try again.";
     } finally {
       isSaving = false;
     }
@@ -47,6 +48,12 @@
   {#if saveSuccess}
     <div class="alert-success" role="status">
       ✓ Activities saved! Redirecting to Writing & Statement...
+    </div>
+  {/if}
+
+  {#if saveError}
+    <div class="alert-error" role="alert">
+      {saveError}
     </div>
   {/if}
 
@@ -122,6 +129,16 @@
     background-color: #e6fffa;
     border: 1px solid #319795;
     color: #234e52;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+  }
+
+  .alert-error {
+    background-color: #fff5f5;
+    border: 1px solid #feb2b2;
+    color: #9b2c2c;
     padding: 0.75rem 1rem;
     border-radius: 8px;
     margin-bottom: 1.5rem;

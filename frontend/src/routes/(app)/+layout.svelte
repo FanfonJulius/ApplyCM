@@ -15,6 +15,7 @@
 	const navItems = [
 		{ href: "/dashboard", label: "Dashboard" },
 		{ href: "/discover", label: "Discover Schools" },
+		{ href: "/career-guide", label: "AI Career Guide" },
 		{ href: "/application/profile", label: "Application Profile", matchPrefix: "/application" },
 		{ href: "/favorites", label: "Favorites" },
 		{ href: "/settings", label: "Settings" }

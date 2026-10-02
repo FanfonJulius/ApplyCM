@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
-
-  const API_BASE_URL = "http://localhost:8001";
+  import type { ProfileSection } from "$lib/api/profile";
+  import { isSectionComplete, loadProfile } from "$lib/stores/profile.svelte";
+  import { apiFetch } from "$lib/api/client";
 
   interface ApplicationSectionStatus {
     key: string;
@@ -70,7 +71,7 @@
   let greeting = $derived(
     new Date().getHours() < 12
       ? "Good morning"
-      : new Date().getHours() < 16
+      : new Date().getHours() < 17
         ? "Good afternoon"
         : "Good evening",
   );
@@ -79,12 +80,7 @@
     loading = true;
     loadError = null;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/v1/dashboard/summary`, {
-        credentials: "include",
-        headers: { Accept: "application/json" },
-      });
-      if (!res.ok) throw new Error(`Request failed (${res.status})`);
-      summary = await res.json();
+      summary = await apiFetch<DashboardSummary>("/api/students/me/summary");
     } catch (err) {
       loadError =
         err instanceof Error ? err.message : "Could not load your dashboard.";
@@ -94,17 +90,16 @@
   }
 
   function getCompletedSections(sections: ApplicationSectionStatus[]): ApplicationSectionStatus[] {
-    if (typeof window === "undefined") return sections;
-    return sections.map((sec) => {
-      const isCompleteStored = localStorage.getItem(`section_${sec.key}_complete`);
-      return {
-        ...sec,
-        complete: isCompleteStored === "true" || sec.complete
-      };
-    });
+    return sections.map((sec) => ({
+      ...sec,
+      complete: sec.complete || isSectionComplete(sec.key as ProfileSection),
+    }));
   }
 
-  onMount(loadDashboard);
+  onMount(() => {
+    loadDashboard();
+    loadProfile();
+  });
 
   const visibleSections = $derived(
     getCompletedSections(
@@ -344,6 +339,7 @@
     font-size: 1.8rem;
     font-weight: 700;
     color: #1a2b4a;
+    overflow-wrap: break-word;
   }
   .hero-illustration {
     flex-shrink: 0;
@@ -353,6 +349,32 @@
     margin: 2rem 0 1rem;
     font-size: 2rem;
     font-weight: 700;
+  }
+
+  @media (max-width: 580px) {
+    .dashboard-page {
+      padding: 1.5rem 1rem 3rem;
+    }
+    .hero {
+      flex-direction: column;
+      text-align: center;
+      gap: 0.75rem;
+      padding: 1.5rem 1.25rem;
+    }
+    .hero-illustration {
+      width: 100px;
+      height: auto;
+    }
+    .hero h1 {
+      font-size: 1.35rem;
+    }
+    .page-title {
+      margin: 1.5rem 0 1rem;
+      font-size: 1.5rem;
+    }
+    .application-body {
+      gap: 1.5rem;
+    }
   }
 
   .card {
